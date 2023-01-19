@@ -18,7 +18,11 @@ mongoose
 app.use(express.json());
 app.use(
   cors({
-    origin: [process.env.CLIENT_URL, "https://pwo-mern.onrender.com", "/*"],
+    origin: [
+      process.env.CLIENT_URL, 
+      "https://pwo-mern.onrender.com", 
+      "https://playwell-online-exux.vercel.app"
+    ],
   })
 );
 
