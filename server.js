@@ -15,10 +15,10 @@ mongoose
   .catch((err) => console.log("DB Connection Error ", err));
 
 // middlewares
-app.use(express.json({ limit: "5mb" }));
+app.use(express.json());
 app.use(
   cors({
-    origin: [process.env.CLIENT_URL, "https://pwo-mern.onrender.com"],
+    origin: [process.env.CLIENT_URL, "https://pwo-mern.onrender.com", "/*"],
   })
 );
 
