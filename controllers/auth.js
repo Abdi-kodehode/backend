@@ -1,6 +1,8 @@
 import User from "../models/user";
 import { hashPassword, comparePassword } from "../helpers/auth";
 import jwt from "jsonwebtoken";
+const crypto = require("crypto")
+const sendEmail = require("../utils/sendMail");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 export const register = async (req, res) => {
@@ -90,3 +92,80 @@ export const login = async (req, res) => {
     console.log(err);
   }
 };
+
+
+export const forgot = async(req, res) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    if(!user) {
+      return res.status(404).json({ error: "Wrong email" })
+    }
+  
+    user.resetPasswordToken = crypto.randomBytes(20).toString("hex");
+    user.resetPasswordExpires = Date.now() + 3600000;
+    await user.save()
+  
+    const resetURL = `${process.env.CLIENT_URL}/passwordreset/${user.resetPasswordToken}`;
+    // res.json({ message: `You have been emailed a link. ${resetURL}` })
+    const mailText = `
+      <h3>Hei ${user.username}</h3>
+
+      <h5>Du har nettopp prøvd å fornyet ditt password. Hvis dette er riktig følg linken under</h5>
+      <a href=${resetURL} clicktracking=off>Link</a>
+    `
+    await sendEmail(user.email, "Password reset", mailText);
+    res.status(200).json({ success: true, data: "Email Sent" });
+    } catch (error) {
+      console.log(error)    
+    }
+}
+
+export const reset = async(req, res) => {
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpires: { $gt: Date.now() }
+    })
+    if(!user) {
+      return res.status(400).json({ success: false, data: "Password reset is invalid or has expired" });
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export const confirmedPassword = async(req, res, next) => {
+  try {
+    if(req.body.password === req.body.confirmpassword) {
+      next()
+      return
+    }
+    res.status(400).json({ success: false, data: "Password dont match!" })
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export const update = async(req, res) => {
+  console.log("update method called");
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpires: { $gt: Date.now() }
+    }, {new: true});
+    if(!user) {
+      return res.status(400).json({ success: false, data: "Password reset is invalid or has expired" });
+    }
+
+    const hashedPassword = await hashPassword(req.body.password);
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save()
+
+    res.json({ success: true, data: "Password updated successfully" })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ success: false, data: "An error occured while saving the new password" })
+  }
+}

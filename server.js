@@ -16,7 +16,15 @@ mongoose
 
 // middlewares
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      process.env.CLIENT_URL, 
+      "https://pwo-mern.onrender.com", 
+      "https://playwell-online-exux.vercel.app"
+    ],
+  })
+);
 
 // autoload routes
 readdirSync("./routes").map((r) => app.use("/api", require(`./routes/${r}`)));

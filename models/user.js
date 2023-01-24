@@ -23,7 +23,9 @@ const userSchema = new Schema({
   stripe_customer_id: {
     type: String,
     subscriptions: [],
-  }
+  },
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
 });
 
 export default mongoose.model("User", userSchema);
