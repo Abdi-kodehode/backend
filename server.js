@@ -19,8 +19,7 @@ app.use(express.json());
 app.use(
   cors({
     origin: [
-      process.env.CLIENT_URL, 
-      "https://pwo-mern.onrender.com", 
+      process.env.CLIENT_URL,  
       "https://playwell-online-exux.vercel.app"
     ],
   })
