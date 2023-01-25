@@ -110,8 +110,7 @@ export const forgot = async(req, res) => {
     const mailText = `
       <h3>Hei ${user.username}</h3>
 
-      <p>Du har nettopp prøvd å fornyet ditt password. Hvis dette er riktig følg linken under</p>
-      <a href=${resetURL} clicktracking=off>Link</a>
+      <p>Du har nettopp prøvd å fornyet ditt password. Hvis dette er riktig følg <a href=${resetURL}clicktracking=off>Linken</a></p>
       <p>Hvis dette er feil, se bort ifra denne mailen.</p>
     `
     await sendEmail(user.email, "Password reset", mailText);
