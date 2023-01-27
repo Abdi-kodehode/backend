@@ -1,4 +1,5 @@
 import User from "../models/user";
+import sendEmail from "../utils/sendMail";
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 export const prices = async (req, res) => {
@@ -26,6 +27,26 @@ export const createSubscription = async (req, res) => {
       cancel_url: process.env.STRIPE_CANCEL_URL,
     });
     console.log("checkout session", session);
+    // Check the status of the session and confirm payment
+    const session_status = await stripe.checkout.sessions.retrieve(session.id);
+    if(session_status.payment_status === "unpaid"){
+      try {
+        // Send email confirmation
+        sendEmail( 
+          user.email, 
+          "Velkommen til Playwell Online", 
+          `
+          <h2>Congratulations!</h2>
+
+          <p>Du har opprettet en ny abonnement.</p>
+          <p>Husk å registrere deg på vår Discord-kanal også ved å følge denne. <a href="https://discord.gg/utezB7bQ">Linken</a></p>
+          `
+        );
+        console.log("Email sent!");
+      } catch (error) {
+          console.log("Email not sent: ", error);
+      }
+  }
     res.json(session.url);
   } catch (err) {
     console.log(err);
